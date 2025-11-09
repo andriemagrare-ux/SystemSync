@@ -1,0 +1,1204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Systemsync — Compatibility Explorer</title>
+
+  <!-- Fonts (system fallback only; no external calls) -->
+  <style>
+    :root{
+      --gold:#d4af37;
+      --gold-dark:#b68f2a;
+      --bg-dark:#0f0f10;
+      --muted:#cfcfcf;
+      --card:#111114;
+      --glass: rgba(255,255,255,0.03);
+      --accent:#ffd873;
+      --radius:14px;
+      --max-width:1100px;
+      --gap:20px;
+      --ff-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Subtle animated shimmer background - small, tasteful motion */
+    body{
+      margin:0;
+      font-family:var(--ff-sans);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(212,175,55,0.06) 0, rgba(212,175,55,0.02) 2%, transparent 6%),
+        radial-gradient(circle at 90% 80%, rgba(212,175,55,0.04) 0, rgba(212,175,55,0.01) 2%, transparent 6%),
+        linear-gradient(180deg, #070708 0%, #0b0b0c 35%, #0f0f10 100%);
+      color: #eee;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:48px 20px;
+      position:relative;
+      overflow-x:hidden;
+    }
+
+    /* animated overlay to shimmer gold softly */
+    body::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(120deg, rgba(212,175,55,0.01) 0%, rgba(212,175,55,0.03) 20%, rgba(212,175,55,0.01) 40%, transparent 60%);
+      transform: translateX(-30%);
+      animation: shimmer 20s linear infinite;
+      pointer-events:none;
+      mix-blend-mode: overlay;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-30%) translateY(0) }
+      50% { transform: translateX(30%) translateY(2%) }
+      100% { transform: translateX(-30%) translateY(0) }
+    }
+
+    .container{
+      width:100%;
+      max-width:var(--max-width);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:var(--gap);
+      z-index:1; /* above shimmer */
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:12px 16px;
+      border-radius:12px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(212,175,55,0.08);
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .logo{
+      width:52px;
+      height:52px;
+      display:grid;
+      place-items:center;
+      border-radius:12px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      box-shadow: 0 6px 18px rgba(212,175,55,0.12);
+      color:#111;
+      font-weight:700;
+      font-size:18px;
+    }
+
+    nav{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    nav a{
+      color:var(--muted);
+      text-decoration:none;
+      padding:8px 12px;
+      border-radius:10px;
+      font-weight:600;
+      font-size:14px;
+    }
+
+    nav a.active, nav a:hover{
+      background: linear-gradient(90deg, rgba(212,175,55,0.09), rgba(212,175,55,0.03));
+      color:#fff;
+      box-shadow: 0 4px 12px rgba(212,175,55,0.06);
+    }
+
+    .mobile-toggle{
+      display:none;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--muted);
+      padding:8px;
+      border-radius:10px;
+    }
+
+    main{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:24px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    section{
+      display:none;
+    }
+
+    section.active{
+      display:block;
+      animation: fadeUp .36s ease both;
+    }
+
+    @keyframes fadeUp {
+      from {opacity:0; transform: translateY(6px)}
+      to {opacity:1; transform: translateY(0)}
+    }
+
+    /* Home */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      gap:24px;
+      align-items:center;
+    }
+
+    .hero .copy h1{
+      margin:0 0 12px 0;
+      font-size:28px;
+      color:var(--gold);
+      letter-spacing:0.6px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      margin:0 0 18px 0;
+      line-height:1.5;
+    }
+
+    .start-btn{
+      display:inline-grid;
+      grid-auto-flow:column;
+      gap:10px;
+      align-items:center;
+      padding:12px 18px;
+      background: linear-gradient(90deg,var(--gold), var(--gold-dark));
+      color:#111;
+      font-weight:700;
+      border-radius:12px;
+      border: none;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(212,175,55,0.16);
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:16px;
+      border-radius:14px;
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+
+    /* large OS buttons which will appear after Start */
+    .home-os-actions{
+      margin-top:18px;
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-start;
+      transition:opacity .36s ease;
+    }
+
+    .home-os-btn{
+      background: linear-gradient(90deg,var(--gold), var(--gold-dark));
+      color:#111;
+      padding:18px 28px;
+      font-weight:900;
+      border-radius:14px;
+      border:none;
+      cursor:pointer;
+      box-shadow: 0 12px 30px rgba(212,175,55,0.14);
+      font-size:18px;
+    }
+
+    .home-os-btn.secondary{
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: none;
+      font-weight:700;
+    }
+
+    /* About OS layout */
+    .grid-2{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:18px;
+      align-items:start;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    h2.section-title{
+      color:var(--gold);
+      margin-top:0;
+      margin-bottom:10px;
+    }
+
+    ol.steps{
+      padding-left:18px;
+      color:var(--muted);
+    }
+
+    .video-list a{
+      display:block;
+      color: var(--muted);
+      text-decoration:none;
+      margin:8px 0;
+      font-weight:600;
+    }
+
+    .video-embed{
+      width:100%;
+      height:200px;
+      border-radius:10px;
+      border:0;
+      background:#000;
+      overflow:hidden;
+    }
+
+    /* About Us */
+    .dev-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .dev-item{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      padding:10px;
+      border-radius:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    .dev-item .meta{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .dev-item a{
+      color: var(--accent);
+      text-decoration:none;
+      font-weight:600;
+    }
+
+    /* FAQ */
+    .faq{
+      display:grid;
+      gap:10px;
+    }
+
+    .qa{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border-radius:10px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    .qa h4{
+      margin:0;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+    }
+
+    .qa p{
+      margin:8px 0 0 0;
+      color:var(--muted);
+      display:none;
+      line-height:1.45;
+    }
+
+    .qa.open p{
+      display:block;
+    }
+
+    /* Footer */
+    footer{
+      margin-top:8px;
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      padding:12px 6px;
+    }
+
+    /* Responsive */
+    @media (max-width:920px){
+      .hero{ grid-template-columns: 1fr; }
+      .grid-2{ grid-template-columns: 1fr; }
+      .video-embed{ height:180px; }
+      .home-os-actions{ justify-content:center; }
+    }
+
+    @media (max-width:720px){
+      nav{ display:none; }
+      .mobile-toggle{ display:inline-block; }
+      header{ flex-direction:column; align-items:stretch; gap:12px;}
+    }
+
+    /* small utilities */
+    .muted{ color:var(--muted); font-size:13px }
+    .tiny{ font-size:12px; color:rgba(255,255,255,0.6) }
+    .pill{ padding:6px 8px; background:rgba(255,255,255,0.02); border-radius:999px; font-weight:700 }
+    a.cta{ color:var(--gold); font-weight:700; text-decoration:none }
+
+    /* OS detail table styles (kept consistent with theme) */
+    .os-table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+      color:var(--muted);
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border:1px solid rgba(255,255,255,0.02);
+      border-radius:8px;
+      overflow:hidden;
+    }
+
+    .os-table th, .os-table td{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,0.02);
+      text-align:left;
+    }
+
+    .os-table th{
+      background:linear-gradient(90deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
+      color:#fff;
+      font-weight:700;
+    }
+
+    .sub-actions{
+      display:flex;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .sub-actions button{
+      padding:8px 12px;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">SS</div>
+        <div>
+          <div style="font-weight:800;color:var(--gold)">Systemsync</div>
+          <div class="tiny">Compatibility Explorer — OS & Components</div>
+        </div>
+      </div>
+
+      <nav id="topNav" aria-label="Main navigation">
+        <a href="#home" data-target="home" class="active">Home</a>
+        <a href="#about-os" data-target="about-os">OS Guide</a>
+        <a href="#about-us" data-target="about-us">About Us</a>
+        <a href="#faq" data-target="faq">FAQ</a>
+      </nav>
+
+      <button class="mobile-toggle" id="mobileToggle" aria-expanded="false">Menu</button>
+    </header>
+
+    <main>
+      <!-- HOME -->
+      <section id="home" class="active" aria-labelledby="home-title">
+        <div class="hero">
+          <div class="copy">
+            <h1 id="home-title">Development of web-application for compatible computer components in/for operating system</h1>
+            <p>
+              Systemsync helps users identify compatible hardware components for different operating systems and learn core installation steps and driver resources.
+              Explore installation guides, driver links, and developer details — all in a gold-themed, accessible interface.
+            </p>
+
+            <button class="start-btn" id="startBtn" title="Start exploring Systemsync">
+              <span>Start</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="opacity:.98">
+                <path d="M5 12h14M13 5l7 7-7 7" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <!-- big Microsoft / Linux buttons (hidden initially) -->
+            <div id="homeOsActions" class="home-os-actions" style="opacity:0;display:none;">
+              <button id="homeBtnMicrosoft" class="home-os-btn" title="Microsoft">
+  <img src="microsoft-icon.png" alt="Microsoft" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"> Microsoft
+</button>
+<button id="homeBtnLinux" class="home-os-btn" title="Linux">
+  <img src="linux-icon.png" alt="Linux" style="width:20px; height:20px; vertical-align:middle; margin-right:8px;"> Linux
+</button>
+</div>
+
+            <div style="margin-top:14px" class="tiny muted">
+              Click Start to reveal OS families (Microsoft & Linux).
+            </div>
+          </div>
+
+          <aside class="panel">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div class="pill">Theme: Gold</div>
+                <div class="tiny muted" style="margin-top:8px">Purpose: Identify compatible components & educate about OSes</div>
+              </div>
+              <div style="text-align:right">
+                <div class="tiny muted">Version</div>
+                <div style="font-weight:800;color:var(--accent)">Alpha • Demo</div>
+              </div>
+            </div>
+
+            <hr style="opacity:.06;margin:14px 0;border:none;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent)">
+
+            <div class="tiny muted">
+              Developers section & contact info available on About Us. If you find bugs please contact the team — we'll try to address issues as soon as possible.
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ABOUT OS -->
+      <section id="about-os" aria-labelledby="about-os-title">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="section-title" id="about-os-title">OS Guide — Installation guides & resources</h2>
+          <div class="tiny muted">Installation steps, driver links, and demo videos</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3 style="margin-top:0">Installation Steps — Quick lists</h3>
+
+            <h4 style="margin-bottom:6px">Windows 8</h4>
+            <ol class="steps">
+              <li>Prepare installation media (USB/DVD) with Windows 8 files.</li>
+              <li>Boot from the media (select USB/DVD as boot device).</li>
+              <li>Select language, time, and currency format.</li>
+              <li>Accept license terms.</li>
+              <li>Choose installation type (Custom for clean install; Upgrade to keep files).</li>
+              <li>Partition and format disk; choose target partition (may auto-partition).</li>
+              <li>Install Windows (copy files and features).</li>
+              <li>Configure settings (create account, set password).</li>
+              <li>Activate Windows with a product key.</li>
+            </ol>
+
+            <h4 style="margin-bottom:6px;margin-top:14px">Windows 11</h4>
+            <ol class="steps">
+              <li>Check system requirements (TPM, Secure Boot, CPU, RAM, storage).</li>
+              <li>Prepare installation media (USB with Windows 11 files).</li>
+              <li>Boot from media and follow the installer prompts.</li>
+              <li>Select language/time, accept license terms.</li>
+              <li>Choose Custom or Upgrade install.</li>
+              <li>Partition/format disk and select install location.</li>
+              <li>Install, configure settings and activate Windows.</li>
+            </ol>
+
+            <h4 style="margin-bottom:6px;margin-top:14px">Ubuntu 22.04</h4>
+            <ol class="steps">
+              <li>Download Ubuntu 22.04 ISO from the official site.</li>
+              <li>Create a bootable USB drive (Rufus, Etcher, etc.).</li>
+              <li>Boot from USB; choose "Try Ubuntu" or "Install Ubuntu".</li>
+              <li>Select language and keyboard layout.</li>
+              <li>Choose installation type (normal/minimal; erase disk or manual partition).</li>
+              <li>Configure timezone, username, password, and hostname.</li>
+              <li>Install, reboot and finish optional updates.</li>
+            </ol>
+
+            <h4 style="margin-bottom:6px;margin-top:14px">Debian 13</h4>
+            <ol class="steps">
+              <li>Download Debian 13 ISO from Debian's official site.</li>
+              <li>Create bootable media and boot from it.</li>
+              <li>Select language and graphical/text-based install.</li>
+              <li>Configure network, partition disk (guided or manual).</li>
+              <li>Set root/user accounts & password.</li>
+              <li>Select software packages and install.</li>
+              <li>Reboot and finalize configuration.</li>
+            </ol>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-top:0">Videos & Driver Resources</h3>
+
+            <div class="video-list">
+              <a href="https://youtu.be/RsGPN4Aoewg?si=R2OkCVEaJnn9KbfG" target="_blank" rel="noopener">Windows 8 installation demo (YouTube)</a>
+              <a href="https://youtu.be/h7KrsciBT4c?si=onoNBxuYHM2gzm_t" target="_blank" rel="noopener">Windows 11 installation demo (YouTube)</a>
+              <a href="https://youtu.be/1wC-RE_B-E?si=UMczdvSf7Rlvdywn" target="_blank" rel="noopener">Ubuntu 22.04 installation demo (YouTube)</a>
+              <a href="https://youtu.be/gevWartnCDQ?si=MgaQKrgAYartALP" target="_blank" rel="noopener">Debian 13 installation demo (YouTube)</a>
+            </div>
+
+            <hr style="opacity:.06;margin:12px 0;border:none;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent)">
+
+            <h4 style="margin-bottom:6px">Driver guidance</h4>
+            <p class="muted">
+              Use official OS vendor pages and your hardware manufacturer's support pages first. For Linux, use official repos ("Additional Drivers" in Ubuntu) or vendor guides for NVIDIA/others.
+              Wrong drivers can destabilize systems — verify source and compatibility.
+            </p>
+
+            <!-- Added Microsoft / Linux quick entry buttons inside the same card (no style changes) -->
+            <div class="sub-actions" style="margin-top:18px">
+              <button id="btnMicrosoft" class="home-os-btn">Microsoft</button>
+              <button id="btnLinux" class="home-os-btn">Linux</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MICROSOFT (sub-page style section) -->
+      <section id="microsoft" aria-labelledby="microsoft-title">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="section-title" id="microsoft-title">Microsoft — Choose Version</h2>
+          <div class="tiny muted">Windows 8 and Windows 11 details</div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <button class="start-btn" id="chooseWin8">Windows 8</button>
+          <button class="start-btn" id="chooseWin11">Windows 11</button>
+          <button style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;" id="backFromMicrosoft">Back</button>
+        </div>
+      </section>
+
+      <!-- LINUX (sub-page style section) -->
+      <section id="linux" aria-labelledby="linux-title">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="section-title" id="linux-title">Linux — Choose Version</h2>
+          <div class="tiny muted">Ubuntu 22.04 and Debian 13 (Trixie) details</div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <button class="start-btn" id="chooseUbuntu">Ubuntu 22.04</button>
+          <button class="start-btn" id="chooseDebian">Debian 13 (Trixie)</button>
+          <button style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;" id="backFromLinux">Back</button>
+        </div>
+      </section>
+
+      <!-- WINDOWS 8 DETAILS -->
+      <section id="windows-8" aria-labelledby="win8-title">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="section-title" id="win8-title">Windows 8 — System Requirements & Hardware Specs</h2>
+          <div class="tiny muted">Detailed hardware and driver links</div>
+        </div>
+
+        <div class="card">
+          <table class="os-table" aria-describedby="win8-title">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Minimum Requirement</th>
+                <th>Recommended / Example Hardware</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CPU</td>
+                <td>Intel Core 2 Duo 1.50GHz (mobile / entry)</td>
+                <td>
+                  Intel Core i7-4790 Processor 3.6GHz 8MB LGA 1150 (CM8064601560113)<br>
+                  Intel Core i5-2400 Processor 3.1GHz 5.0GT-s 6MB LGA 1155<br>
+                  LF80537GF0212M Intel Core 2 Duo T5250 1.50GHz Mobile Processor
+                </td>
+              </tr>
+
+              <tr>
+                <td>GPU</td>
+                <td>DirectX 9 compatible</td>
+                <td>NVIDIA Quadro 600 1GB DDR3 LP<br>OEM GT 720 2GB GDDR3 HDMI/VGA</td>
+              </tr>
+
+              <tr>
+                <td>RAM</td>
+                <td>2GB DDR3</td>
+                <td>Timetec 4GB DDR3L (4GB)<br>DDR3 1600MHz PC3L-12800 (4GB)<br>PC3-12800 Non-ECC Unbuffered 1.35V (4GB)</td>
+              </tr>
+
+              <tr>
+                <td>Motherboard</td>
+                <td>Any LGA 775 / LGA 1150 compatible board</td>
+                <td>Intel Z77 GA-Z77X-UP5 TH<br>Intel GA-H77-DS3H<br>Intel GA-B75M-HD3</td>
+              </tr>
+
+              <tr>
+                <td>Storage (SSD/HDD)</td>
+                <td>20–40GB free HDD</td>
+                <td>40GB — Intel 320 Series SSD<br>180GB — Intel 520 Series SSD<br>180GB — Intel 2500 Series SSD</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <a class="cta" href="https://youtu.be/RsGPN4Aoewg?si=R2OkCVEaJnn9KbfG" target="_blank">Windows 8 Install Video</a>
+            <a class="cta" href="https://www.microsoft.com" target="_blank">Microsoft Drivers</a>
+            <button style="margin-left:auto" id="backFromWin8">Back</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- WINDOWS 11 DETAILS -->
+      <section id="windows-11" aria-labelledby="win11-title">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="section-title" id="win11-title">Windows 11 — System Requirements & Hardware Specs</h2>
+          <div class="tiny muted">Detailed hardware and driver links</div>
+        </div>
+
+        <div class="card">
+          <table class="os-table" aria-describedby="win11-title">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Minimum Requirement</th>
+                <th>Recommended / Example Hardware</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CPU</td>
+                <td>1GHz 64-bit dual-core (Microsoft compatibility)</td>
+                <td>AMD Athlon™ 7120e<br>AMD EPYC™ 7252<br>AMD Ryzen Embedded R2000 Series R2312</td>
+              </tr>
+
+              <tr>
+                <td>GPU</td>
+                <td>DirectX 12 compatible / WDDM 2.0+</td>
+                <td>GeForce GTX 1000 series<br>Radeon RX 500 series<br>AMD Radeon RX 480</td>
+              </tr>
+
+              <tr>
+                <td>RAM</td>
+                <td>4GB DDR4 minimum</td>
+                <td>
+                  TRANSCEND 4GB DDR4 PC3200MHZ SODIMM (JM3200HSH-4G)<br>
+                  KINGSTON 4GB DDR4 PC3200MHZ SODIMM KCDT82<br>
+                  Kingston 4GB DDR4 PC3200MHZ Non-ECC SODIMM (KVR32S22S6/4)
+                </td>
+              </tr>
+
+              <tr>
+                <td>Motherboard</td>
+                <td>TPM 2.0 + Secure Boot capable</td>
+                <td>C422 Series TRX40 Series<br>A320 TRX40<br>PRIME Z590-A</td>
+              </tr>
+
+              <tr>
+                <td>Storage</td>
+                <td>64GB SSD minimum</td>
+                <td>Neutron Series™ 64GB SATA 3 6Gb/s SSD<br>SSD M.2 2242 64GB<br>Kingston SSD NOW V+Series 64GB SSD</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <a class="cta" href="https://youtu.be/h7KrsciBT4c?si=onoNBxuYHM2gzm_t" target="_blank">Windows 11 Install Video</a>
+            <a class="cta" href="https://www.microsoft.com" target="_blank">Microsoft Drivers</a>
+            <button style="margin-left:auto" id="backFromWin11">Back</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- UBUNTU 22.04 DETAILS -->
+      <section id="ubuntu-22" aria-labelledby="ubuntu-title">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="section-title" id="ubuntu-title">Ubuntu 22.04 — System Requirements & Hardware Specs</h2>
+          <div class="tiny muted">Detailed hardware and driver links</div>
+        </div>
+
+        <div class="card">
+          <table class="os-table" aria-describedby="ubuntu-title">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Minimum Requirement</th>
+                <th>Recommended / Example Hardware</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CPU</td>
+                <td>2GHz dual-core or equivalent</td>
+                <td>Intel Corp. Intel(R) Core(TM) 5 120U<br>Intel 11th Gen Core i7-11700 @2.50GHz<br>Intel Pentium Gold G7400</td>
+              </tr>
+
+              <tr>
+                <td>GPU</td>
+                <td>OpenGL 2.0 / basic acceleration</td>
+                <td>NVIDIA Quadro P620<br>Nvidia GT 220<br>EVGA NVIDIA GeForce GTX 1070</td>
+              </tr>
+
+              <tr>
+                <td>RAM</td>
+                <td>2GB</td>
+                <td>4GB DDR3 Desktop 1333MHz<br>4GB DDR4 Laptop 2133MHz<br>ADATA 4GB DDR3 1600MHz</td>
+              </tr>
+
+              <tr>
+                <td>Motherboard</td>
+                <td>Any x86-compatible board</td>
+                <td>Biostar P4M890-M7 VIA P4M890 Core 2<br>ASUS H61M-K<br>H81M-D2</td>
+              </tr>
+
+              <tr>
+                <td>Storage (SSD/HDD)</td>
+                <td>25GB free disk</td>
+                <td>DJSA-232 IBM 32GB 2.5" 12MM HDD<br>10000 RPM 32GB SATA External HDD<br>64GB Apacer</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <a class="cta" href="https://youtu.be/1wC-RE_B-E?si=UMczdvSf7Rlvdywn" target="_blank">Ubuntu 22.04 Install Video</a>
+            <a class="cta" href="https://ubuntu.com/tutorials/install-ubuntu-desktop" target="_blank">Ubuntu Drivers / Guide</a>
+            <button style="margin-left:auto" id="backFromUbuntu">Back</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEBIAN 13 DETAILS -->
+      <section id="debian-13" aria-labelledby="debian-title">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 class="section-title" id="debian-title">Debian 13 (Trixie) — System Requirements & Hardware Specs</h2>
+          <div class="tiny muted">Detailed hardware and driver links</div>
+        </div>
+
+        <div class="card">
+          <table class="os-table" aria-describedby="debian-title">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Minimum Requirement</th>
+                <th>Recommended / Example Hardware</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CPU</td>
+                <td>1GHz</td>
+                <td>Core i7-11850HE<br>Core i7-3770<br>I5-2500 6M 3.30GHz</td>
+              </tr>
+
+              <tr>
+                <td>GPU</td>
+                <td>OpenGL 2.0 / basic acceleration</td>
+                <td>Asus Geforce GT 1030 2GB GDDR5<br>Nvidia GT 220<br>NVIDIA Quadro 600 1GB DDR3 LP</td>
+              </tr>
+
+              <tr>
+                <td>RAM</td>
+                <td>1GB</td>
+                <td>2GB 533MHz / 2GB 800MHz / 2GB 667MHz</td>
+              </tr>
+
+              <tr>
+                <td>Motherboard</td>
+                <td>Any x86-compatible board</td>
+                <td>Z68 GA-Z68A-D3H-B3<br>A85X GA-F2A85X-UP4<br>A75 GA-A75-UD4H</td>
+              </tr>
+
+              <tr>
+                <td>Storage (SSD/HDD)</td>
+                <td>10GB</td>
+                <td>40GB Intel 320 Series<br>Neutron Series™ 64GB SATA 3 SSD<br>ADATA 4GB DDR3 1600MHz (example)</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <a class="cta" href="https://youtu.be/gevWartnCDQ?si=MgaQKrgAYartALP" target="_blank">Debian 13 Install Video</a>
+            <a class="cta" href="https://www.debian.org/releases/trixie/" target="_blank">Debian Drivers / Guide</a>
+            <button style="margin-left:auto" id="backFromDebian">Back</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABOUT US -->
+      <section id="about-us" aria-labelledby="about-us-title">
+        <h2 class="section-title" id="about-us-title">About Us</h2>
+        <p class="muted">Systemsync was made in hopes of helping people identify what components they should have for certain OS (operating systems) while also educating them with two of the mainline operating systems (OS). The parts of this website such as the system requirements, components, drivers were all found by our researchers. In a situation any bugs or errors appear in this please do keep in mind this has been developed by one person, any bugs that may appear we will try to fix it as soon as possible.</p>
+
+        <hr style="opacity:.06;margin:18px 0;border:none;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent)">
+
+      <style>
+  /* Container ng buong team */
+  .team-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cards sa isang hilera */
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* Style para sa bawat card */
+  .team-card {
+    background-color: #b68f2a;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Placeholder image style */
+  .team-card img {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 12px;
+    background-color: #b68f2a; /* placeholder background */
+  }
+
+  /* Role title on top */
+  .role-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #0b0b0c;
+    margin-bottom: 12px;
+  }
+
+  /* Name style */
+  .name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #0b0b0c;
+  }
+
+  /* Email style - may tamang font size unit at margin para sa spacing */
+  .email {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #0b0b0c;
+    font-style: italic;
+    margin-bottom: 6px; /* para may space bago ang role */
+  }
+
+  /* Role description - konting margin pataas para spacing */
+  .role {
+    font-size: 0.9rem;
+    color: #0b0b0c;
+    margin-top: 4px;
+  }
+
+  /* Center presenter card below row */
+  .presenter-card {
+    grid-column: 2 / span 2;
+  }
+
+  /* Responsive: 2 columns on smaller screens */
+  @media (max-width: 768px) {
+    .team-container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .presenter-card {
+      grid-column: auto;
+    }
+  }
+
+  /* Responsive: 1 column on mobile */
+  @media (max-width: 480px) {
+    .team-container {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+
+<!-- Pinagsama ang lahat ng cards sa iisang container para magkadikit at maayos sa grid -->
+<div class="team-container">
+  <div class="team-card">
+    <img src="shania.jpeg" alt="Shania Krysten A. Estabillo">
+    <div class="role-title">Developers</div>
+    <div class="name">Shania Krysten A. Estabillo</div>
+    <div class="email">shaniakrysten11@gmail.com</div>
+    <div class="role">Web Developer / Lead</div>
+  </div>
+
+  <div class="team-card">
+    <img src="andrie.jpeg" alt="">
+    <div class="role-title">Developers</div>
+    <div class="name">Nicholas Andrie E. Magrare</div>
+    <div class="email">andriemagrare@gmail.com</div>
+    <div class="role">Project Manager / Researcher</div>
+  </div>
+
+  <div class="team-card">
+    <img src="jhadwins.jpeg" alt="">
+    <div class="role-title">Developers</div>
+    <div class="name">Jhadwins Blaire J. Morada</div>
+    <div class="email">jhadwinsblairemorada@gmail.com</div>
+    <div class="role">Testing / Researcher</div>
+  </div>
+
+  <div class="team-card">
+    <img src="Kent.jpeg" alt="">
+    <div class="role-title">Developers</div>
+    <div class="name">Kent Joshua M. Buensalida</div>
+    <div class="email">buensalidakentjoshua@gmail.com</div>
+    <div class="role">Designer / Researcher</div>
+  </div>
+
+  <div class="team-card">
+    <img src="abby.jpeg" alt="">
+    <div class="role-title">Developers</div>
+    <div class="name">Abby Gayle V. Mendezabal</div>
+    <div class="email">mendezabalabby@gmail.com</div>
+    <div class="role">Designer / Researcher</div>
+  </div>
+
+  <div class="team-card">
+    <img src="cale.jpeg" alt="">
+    <div class="role-title">Researcher</div>
+    <div class="name">Cale Jaedon Regla</div>
+    <div class="email">calejaedon@gmail.com</div>
+    <div class="role">Researcher / Testing</div>
+  </div>
+</div>
+
+        <div style="margin-top:18px" class="muted tiny">
+          <strong>Info:</strong> Systemsync was made in hopes of helping people identify what components they should have for certain OS(operating systems) and educating them about mainline OSes. If you find bugs, please contact the team using the emails above.
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" aria-labelledby="faq-title">
+        <h2 class="section-title" id="faq-title">Frequently Asked Questions</h2>
+
+        <div class="faq">
+          <div class="qa">
+            <h4>What is an operating system? <span class="tiny muted">▼</span></h4>
+            <p>An operating system (OS) manages computer hardware and provides a platform for running applications. It coordinates resources like CPU, memory, storage, and devices.</p>
+          </div>
+
+          <div class="qa">
+            <h4>How do I install an operating system? <span class="tiny muted">▼</span></h4>
+            <p>Prepare installation media (USB/DVD), boot your computer from it, follow the prompts, partition drives if needed, set up user credentials, and configure final settings.</p>
+          </div>
+
+          <div class="qa">
+            <h4>What is the difference between RAM and storage? <span class="tiny muted">▼</span></h4>
+            <p>RAM is temporary memory used by active programs and is cleared when power is off. Storage (HDD/SSD) holds files and data persistently even when the computer is turned off.</p>
+          </div>
+
+          <div class="qa">
+            <h4>What is a device driver? <span class="tiny muted">▼</span></h4>
+            <p>A device driver is software that lets the operating system communicate with specific hardware (printers, GPUs, network adapters). Without proper drivers, hardware may not function.</p>
+          </div>
+
+          <div class="qa">
+            <h4>Where do I get an operating system to install? <span class="tiny muted">▼</span></h4>
+            <p>Download OS ISO images from official websites (Microsoft, Ubuntu, Debian) or obtain official media. Always use trusted sources to avoid tampered installers.</p>
+          </div>
+
+          <div class="qa">
+            <h4>How do I make a bootable drive? <span class="tiny muted">▼</span></h4>
+            <p>Use tools like Rufus, Etcher, or UNetbootin to write ISO files to USB/DVD and make them bootable.</p>
+          </div>
+
+          <div class="qa">
+            <h4>Why are drivers important? <span class="tiny muted">▼</span></h4>
+            <p>Correct drivers ensure that hardware works properly with the OS. Wrong drivers can cause crashes, missing features, or poor performance.</p>
+          </div>
+
+          <div class="qa">
+            <h4>What happens if hardware is not compatible? <span class="tiny muted">▼</span></h4>
+            <p>Installation may fail, features may be unavailable, performance may suffer, or the system may be unstable. Check compatibility before installing.</p>
+          </div>
+
+          <div class="qa">
+            <h4>How do I access BIOS/UEFI? <span class="tiny muted">▼</span></h4>
+            <p>During boot, press the key shown on-screen (F2, F10, Del, Esc). The exact key differs by manufacturer.</p>
+          </div>
+
+          <div class="qa">
+            <h4>Which operating is more secured, Microsoft or Linux? <span class="tiny muted">▼</span></h4>
+            <p>Linux offers a much more secured security than windows due to its permission structure and open-source nature.
+        </div>
+      </section>
+
+      <footer>
+        © Systemsync — Development of web-application for compatible computer components. Theme: Gold. Built for capstone/demo.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // Navigation handling - extended to support new sections and hash + scroll-to-top
+    (function(){
+      const nav = document.getElementById('topNav');
+      const links = nav.querySelectorAll('a[data-target]');
+      const sections = document.querySelectorAll('main section');
+
+      function setActive(targetId, pushHash=true){
+        // toggle active on nav links
+        links.forEach(a => a.classList.toggle('active', a.dataset.target === targetId));
+        // add/remove active on sections
+        sections.forEach(s => s.classList.toggle('active', s.id === targetId));
+        // update hash and scroll to top of main for better bookmarking
+        if(pushHash){
+          history.replaceState(null, '', '#' + targetId);
+        }
+        // smooth scroll main container to top of page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      links.forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          const t = a.dataset.target;
+          setActive(t);
+          // focus for accessibility
+          const el = document.getElementById(t);
+          if(el && typeof el.focus === 'function') el.focus();
+        });
+      });
+
+      // Start button -> reveal home OS actions 
+      const startBtn = document.getElementById('startBtn');
+      const homeOsActions = document.getElementById('homeOsActions');
+      if(startBtn && homeOsActions){
+        startBtn.addEventListener('click', () => {
+          // reveal the large MS/Linux buttons on home
+          homeOsActions.style.display = 'flex';
+          // fade in
+          requestAnimationFrame(() => homeOsActions.style.opacity = '1');
+          // keep home active (do not auto-navigate) — user requested buttons appear after Start
+          // update URL to #home for bookmarking consistency
+          history.replaceState(null, '', '#home');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      // Home large MS / Linux buttons (on home)
+      const homeBtnMicrosoft = document.getElementById('homeBtnMicrosoft');
+      const homeBtnLinux = document.getElementById('homeBtnLinux');
+      if(homeBtnMicrosoft) homeBtnMicrosoft.addEventListener('click', () => setActive('microsoft'));
+      if(homeBtnLinux) homeBtnLinux.addEventListener('click', () => setActive('linux'));
+
+      // sub-actions in About OS card
+      const btnMicrosoft = document.getElementById('btnMicrosoft');
+      const btnLinux = document.getElementById('btnLinux');
+      if(btnMicrosoft) btnMicrosoft.addEventListener('click', () => setActive('microsoft'));
+      if(btnLinux) btnLinux.addEventListener('click', () => setActive('linux'));
+
+      // From Microsoft section choose windows versions
+      const chooseWin8 = document.getElementById('chooseWin8');
+      const chooseWin11 = document.getElementById('chooseWin11');
+      if(chooseWin8) chooseWin8.addEventListener('click', () => setActive('windows-8'));
+      if(chooseWin11) chooseWin11.addEventListener('click', () => setActive('windows-11'));
+
+      // From Linux section choose ubuntu/debian
+      const chooseUbuntu = document.getElementById('chooseUbuntu');
+      const chooseDebian = document.getElementById('chooseDebian');
+      if(chooseUbuntu) chooseUbuntu.addEventListener('click', () => setActive('ubuntu-22'));
+      if(chooseDebian) chooseDebian.addEventListener('click', () => setActive('debian-13'));
+
+      // Back buttons to go back to their parents
+      const backFromMicrosoft = document.getElementById('backFromMicrosoft');
+      if(backFromMicrosoft) backFromMicrosoft.addEventListener('click', () => setActive('about-os'));
+      const backFromLinux = document.getElementById('backFromLinux');
+      if(backFromLinux) backFromLinux.addEventListener('click', () => setActive('about-os'));
+
+      const backFromWin8 = document.getElementById('backFromWin8');
+      const backFromWin11 = document.getElementById('backFromWin11');
+      if(backFromWin8) backFromWin8.addEventListener('click', () => setActive('microsoft'));
+      if(backFromWin11) backFromWin11.addEventListener('click', () => setActive('microsoft'));
+
+      const backFromUbuntu = document.getElementById('backFromUbuntu');
+      const backFromDebian = document.getElementById('backFromDebian');
+      if(backFromUbuntu) backFromUbuntu.addEventListener('click', () => setActive('linux'));
+      if(backFromDebian) backFromDebian.addEventListener('click', () => setActive('linux'));
+
+      // Mobile toggle (keeps original behavior)
+      const mobileToggle = document.getElementById('mobileToggle');
+      if(mobileToggle){
+        mobileToggle.addEventListener('click', () => {
+          const expanded = mobileToggle.getAttribute('aria-expanded') === 'true';
+          mobileToggle.setAttribute('aria-expanded', (!expanded).toString());
+          nav.style.display = expanded ? 'flex' : 'flex';
+          if(window.innerWidth <= 720){
+            nav.style.display = expanded ? 'none' : 'flex';
+            nav.style.flexDirection = 'column';
+            nav.style.gap = '8px';
+          }
+        });
+      }
+
+      // FAQ accordion toggles
+      const qaEls = document.querySelectorAll('.qa');
+      qaEls.forEach(el => {
+        el.querySelector('h4').addEventListener('click', () => {
+          el.classList.toggle('open');
+        });
+      });
+
+      // Video embed button
+      const embedBtn = document.getElementById('embedWin8');
+      const frameHolder = document.getElementById('videoFrame');
+      let iframeOpen = false;
+      if(embedBtn){
+        embedBtn.addEventListener('click', () => {
+          if(!iframeOpen){
+            frameHolder.innerHTML = '<iframe src="https://www.youtube.com/embed/RsGPN4Aoewg" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+            embedBtn.textContent = 'Hide Demo';
+          } else {
+            frameHolder.innerHTML = '';
+            embedBtn.textContent = 'Open Windows 8 Demo';
+          }
+          iframeOpen = !iframeOpen;
+        });
+      }
+
+      // Make link-based hash navigation work on load (and scroll to top)
+      const initialHash = location.hash.replace('#','');
+      if(initialHash){
+        const targetExists = Array.from(sections).some(s => s.id === initialHash);
+        if(targetExists) setActive(initialHash, false);
+      } else {
+        // show home by default
+        setActive('home', false);
+      }
+
+      // Small accessibility: allow keyboard navigation for QA
+      qaEls.forEach(el => {
+        el.setAttribute('tabindex','0');
+        el.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            el.classList.toggle('open');
+          }
+        });
+      });
+
+      // ensure mobile nav hides on resize > 720
+      window.addEventListener('resize', () => {
+        if(window.innerWidth > 720){
+          nav.style.display = 'flex';
+        } else {
+          nav.style.display = 'none';
+          mobileToggle.setAttribute('aria-expanded','false');
+        }
+      });
+      // initial responsive nav
+      if(window.innerWidth <= 720){
+        nav.style.display = 'none';
+      }
+    })();
+  </script>
+</body>
+</html>
